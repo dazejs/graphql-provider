@@ -1,3 +1,4 @@
+
 [![GitHub issues](https://img.shields.io/github/issues/dazejs/daze.svg)](https://github.com/dazejs/daze/issues)
 [![npm](https://img.shields.io/npm/v/@dazejs/framework.svg)](https://www.npmjs.com/package/@dazejs/framework)
 [![npm](https://img.shields.io/npm/dm/@dazejs/framework.svg)](https://www.npmjs.com/package/@dazejs/framework)
@@ -10,29 +11,27 @@
     <img width="200" heigth="200" src="https://github.com/dazejs/daze/blob/master/logo.png">
   </a>  
   <h1>Daze.js</h1>
-  <h4>Web framwork for Node.js</h4>
+  <h4>Node.js 的 Web 框架</h4>
 </div>
 
-English | [中文](README_zh.md)
+中文 | [English](README.md)
 
 
-Visit [https://dazejs.org/](https://dazejs.org/) to learn more
+访问 [https://dazejs.org/](https://dazejs.org/) 了解更多
 
-## Introduction
+## 介绍
 
-`Daze.js` is an efficient, highly extensible and powerful `Node.js` server-side Web development framework.
+`Daze.js` 是一款高效、高扩展性、功能强大的 `Node.js` 服务端 Web 开发框架。
 
-> Note: This repository contains the project necessary code of the Daze.js framework. If you want to read core code, visit the core [framework repository](https://github.com/dazejs/framework).
+> 说明: 该仓库包含创建项目必须的项目代码. 如果你想了解更多核心代码, 可以访问 [核心仓库](https://github.com/dazejs/framework).
 
-
-## Installation
+## 安装
 
 ```bash
 $ npm install -g @dazejs/cli
 ```
 
-
-## Getting Started
+## 快速开始
 
 ```bash
 $ daze create example
@@ -40,12 +39,13 @@ $ cd example
 $ npm start
 ```
 
-visit `http://localhost:8080` to preview
+访问 `http://localhost:8080` 进行预览
 
-## Docs & Community
+## 文档 & 社区
 
-- [Documentations](https://dazejs.org/)
+- [中文文档](https://dazejs.org/zh/)
 
 ## License
 
 Daze.js is [MIT licensed](https://github.com/dazejs/daze/blob/master/LICENSE)
+
