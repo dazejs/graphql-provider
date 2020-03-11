@@ -14,9 +14,9 @@ describe('test', () => {
   });
 
   it('test graphql', async () => {
-    const res = await request(app._server).get('/graphql?query={ hello }');
+    const res = await request(app._server).get('/graphql?query={ helloStr(str: "GraphQL!") }');
     expect(res.body.data).toEqual({
-      hello: 'Hello GraphQL!',
+      helloStr: 'Hello GraphQL!',
     });
   });
 });
