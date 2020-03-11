@@ -1,5 +1,5 @@
-import { Middleware, Request, Response, TNext } from "@dazejs/framework/dist";
-import { parse, buildSchema, validate, specifiedRules, validateSchema, getOperationAST, execute, GraphQLSchema, Source } from 'graphql';
+import { Middleware, Request, Response, TNext } from "@dazejs/framework";
+import { parse, validate, specifiedRules, getOperationAST, execute, GraphQLSchema, Source } from 'graphql';
 import { GraphqlConfig } from './graphql.config';
 import { GraphqlAnalyzer } from './graphql.analyzer';
 
@@ -14,7 +14,7 @@ export default class GraphQLMiddleware extends Middleware {
     this.schema = analyzer.mergedSchema;
   }
 
-  async resolve(request: Request, next: TNext): Promise<Response> {
+  async resolve(request: Request | any, next: TNext): Promise<Response> {
     if (!this.isGraphQLRequest(request)) {
       return next();
     }
