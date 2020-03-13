@@ -2,7 +2,8 @@ import * as glob from 'glob';
 import * as path from "path";
 import * as fs from "fs";
 import { buildSchema, GraphQLSchema, validateSchema } from 'graphql';
-import { mergeSchemas } from 'graphql-tools';
+import { makeExecutableSchema } from 'graphql-tools';
+import { mergeTypes } from 'merge-graphql-schemas';
 import {
   GRAPHQL_MUTATION_TYPE,
   GRAPHQL_QUERY_TYPE, GRAPHQL_SUBSCRIPTION_TYPE,
@@ -26,19 +27,17 @@ export class GraphqlAnalyzer {
     // 1. scan for all graphql type files
     const schemas = this.scanForSchemas();
     this.graphqlMethod = this.buildMethods();
-
-    // 2. create resolvers
-    const resolvers = {
-      Query: {
-        hello: () => "hhh",
-        helloStr: (_: any, {str}: any) => {
-          return `Hello ${str}`;
-        }
+    // 2. build resolvers
+    const resolvers = this.buildResolvers();
+    // 3. merge all schemas and make executable
+    const typeDefs = mergeTypes(schemas, { all: true });
+    this.mergedSchema = makeExecutableSchema({
+      typeDefs,
+      resolvers,
+      resolverValidationOptions: {
+        allowResolversNotInSchema: true
       }
-    };
-
-    // 3. merge schemas
-    this.mergedSchema = mergeSchemas({ schemas, resolvers });
+    });
     return this;
   }
 
@@ -54,18 +53,6 @@ export class GraphqlAnalyzer {
         validateSchema(schema);
         return schema;
       });
-
-    // const mergedSchema = makeExecutableSchema({
-    //   typeDefs: `type Query { hello: String! \n helloStr(str: String!): String! }`,
-    //   resolvers: {
-    //     Query: {
-    //       hello: () => "hhh",
-    //       helloStr: (_, {str}) =>  {
-    //         return `hello ${str}`;
-    //       }
-    //     } }});
-
-    // return mergedSchema;
   }
 
   private buildMethods(): GraphQLMethod {
@@ -111,6 +98,19 @@ export class GraphqlAnalyzer {
         });
     });
     return { queries, mutations, subscriptions, typeMethods };
+  }
+
+  private buildResolvers(): any {
+    const typeObject: any = { };
+    this.graphqlMethod.typeMethods.forEach((values, key) => {
+      typeObject[key] = values?.reduce((r: any, v: any) => { r[v.name] = v; return r;}, { });
+    });
+    return {
+      Query: this.graphqlMethod.queries?.reduce((r: any, v: any) => { r[v.name.split(" ")[1]] = v; return r;}, { }),
+      Mutation: this.graphqlMethod.mutations?.reduce((r: any, v: any) => { r[v.name] = v; return r;}, { }),
+      Subscription: this.graphqlMethod.subscriptions?.reduce((r: any, v: any) => { r[v.name] = v; return r;}, { }),
+      ...typeObject
+    };
   }
 }
 

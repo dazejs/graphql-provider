@@ -1,13 +1,15 @@
-import { GraphQL } from '../../../index';
+import { GraphQL, Query } from '../../../index';
 
 @GraphQL()
 export default class TestGraphQL {
 
+  @Query()
   hello() {
     return 'Hello GraphQL!';
   }
 
-  helloStr({ str }: any) {
+  @Query()
+  helloStr(_: any, { str }: any) {
     return `Hello ${str}`;
   }
 }
