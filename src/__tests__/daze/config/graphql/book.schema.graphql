@@ -1,3 +1,9 @@
+
+
 type Book {
+    id: Int!
     name: String!
+    pageCount: Int
+    price: Float
 }
+

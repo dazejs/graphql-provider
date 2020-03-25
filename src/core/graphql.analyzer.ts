@@ -1,7 +1,7 @@
 import * as glob from 'glob';
 import * as path from "path";
 import * as fs from "fs";
-import { buildSchema, GraphQLSchema, validateSchema } from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from 'graphql-tools';
 import { mergeTypes } from 'merge-graphql-schemas';
 import {
@@ -25,12 +25,12 @@ export class GraphqlAnalyzer {
 
   analyze(): GraphqlAnalyzer {
     // 1. scan for all graphql type files
-    const schemas = this.scanForSchemas();
+    const schemasContent = this.scanForSchemasContent();
     this.graphqlMethod = this.buildMethods();
     // 2. build resolvers
     const resolvers = this.buildResolvers();
     // 3. merge all schemas and make executable
-    const typeDefs = mergeTypes(schemas, { all: true });
+    const typeDefs = mergeTypes(schemasContent, { all: true });
     this.mergedSchema = makeExecutableSchema({
       typeDefs,
       resolvers,
@@ -41,25 +41,20 @@ export class GraphqlAnalyzer {
     return this;
   }
 
-  private scanForSchemas(): Array<GraphQLSchema> {
+  private scanForSchemasContent(): Array<string> {
     const filePaths = glob.sync(path.join(this.app.configPath, '**/*.graphql'), {
       nodir: true,
       matchBase: true
     });
     return filePaths
-      .map((p) => fs.readFileSync(p, { encoding: 'utf-8' }))
-      .map(content => {
-        const schema = buildSchema(content);
-        validateSchema(schema);
-        return schema;
-      });
+      .map(p => fs.readFileSync(p, { encoding: 'utf-8' }));
   }
 
   private buildMethods(): GraphQLMethod {
-    const queries: Array<Function> = [];
-    const mutations: Array<Function> = [];
-    const subscriptions: Array<Function> = [];
-    const typeMethods = new Map<string, Array<Function>>();
+    const queries: GFunction[] = [];
+    const mutations: GFunction[] = [];
+    const subscriptions: GFunction[] = [];
+    const typeMethods = new Map<string, GFunction[]>();
 
     const graphQLTypes: Map<Function, GraphQLMetadata> = Reflect.getMetadata(GRAPHQL_TYPE, GRAPHQL_TYPE_OBJ) ?? new Map();
     graphQLTypes.forEach((metadata) => {
@@ -79,20 +74,20 @@ export class GraphqlAnalyzer {
           // TODO: check duplicates
           let has = false;
           if (queryTypes.has(m)) {
-            queries.push(method);
+            queries.push({ name: m, func: method });
             has = true;
           }
           if (mutationTypes.has(m)) {
-            mutations.push(method);
+            mutations.push({ name: m, func: method });
             has = true;
           }
           if (subscriptionTypes.has(m)) {
-            subscriptions.push(method);
+            subscriptions.push({ name: m, func: method });
             has = true;
           }
           if (!has) {
             const others = typeMethods.get(metadata.abstract.name) ?? [];
-            others.push(method);
+            others.push({ name: m, func: method });
             typeMethods.set(metadata.abstract.name, others);
           }
         });
@@ -106,17 +101,22 @@ export class GraphqlAnalyzer {
       typeObject[key] = values?.reduce((r: any, v: any) => { r[v.name] = v; return r;}, { });
     });
     return {
-      Query: this.graphqlMethod.queries?.reduce((r: any, v: any) => { r[v.name.split(" ")[1]] = v; return r;}, { }),
-      Mutation: this.graphqlMethod.mutations?.reduce((r: any, v: any) => { r[v.name] = v; return r;}, { }),
-      Subscription: this.graphqlMethod.subscriptions?.reduce((r: any, v: any) => { r[v.name] = v; return r;}, { }),
+      Query: this.graphqlMethod.queries?.reduce((r: any, v: GFunction) => { r[v.name] = v.func; return r;}, { }),
+      Mutation: this.graphqlMethod.mutations?.reduce((r: any, v: GFunction) => { r[v.name] = v.func; return r;}, { }),
+      Subscription: this.graphqlMethod.subscriptions?.reduce((r: any, v: GFunction) => { r[v.name] = v.func; return r;}, { }),
       ...typeObject
     };
   }
 }
 
 declare type GraphQLMethod = {
-  queries: Array<Function>;
-  mutations: Array<Function>;
-  subscriptions: Array<Function>;
-  typeMethods: Map<string, Array<Function>>;
+  queries: GFunction[];
+  mutations: GFunction[];
+  subscriptions: GFunction[];
+  typeMethods: Map<string, GFunction[]>;
+}
+
+declare type GFunction = {
+  name: string;
+  func: Function;
 }
