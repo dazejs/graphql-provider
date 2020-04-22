@@ -4,8 +4,9 @@ import { GraphQL, Query } from '../../../index';
 export default class HelloGraphql {
 
   @Query()
-  hello(_: any, { str }: any) {
-    return `Hello ${str}`;
+  hello({ str }: any, { request }: any) {
+    const testHeader = request.getHeader('test-header') ?? '';
+    return `Hello ${str}${testHeader}`;
   }
 }
 

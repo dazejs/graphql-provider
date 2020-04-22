@@ -14,4 +14,19 @@ describe('test', () => {
       hello: 'Hello GraphQL!',
     });
   });
+
+  it('test graphql header', async () => {
+    const testHeader = 'test-header';
+    const res = await request(app._server)
+      .get('/graphql?query={ hello(str: "GraphQL!") }')
+      .set({ 'test-header': testHeader });
+    expect(res.body.data).toEqual({
+      hello: `Hello GraphQL!${testHeader}`,
+    });
+  });
+
+  it('test graphiql', async () => {
+    const res = await request(app._server).get('/graphiql?query={ hello(str: "GraphQL!") }');
+    expect(res.text).toContain('<!DOCTYPE html>');
+  });
 });
