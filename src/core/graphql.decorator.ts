@@ -5,11 +5,11 @@ export const GRAPHQL_QUERY_TYPE = Symbol('DAZE#GRAPHQL_QUERY_TYPE');
 export const GRAPHQL_MUTATION_TYPE = Symbol('DAZE#GRAPHQL_MUTATION_TYPE');
 export const GRAPHQL_SUBSCRIPTION_TYPE = Symbol('DAZE#GRAPHQL_SUBSCRIPTION_TYPE');
 
-export function GraphQL(): ClassDecorator {
+export function GraphQL(name?: string): ClassDecorator {
   return function (constructor: Function) {
     const graphQLTypes: Map<Function, GraphQLMetadata> = Reflect.getMetadata(GRAPHQL_TYPE, GRAPHQL_TYPE_OBJ) ?? new Map();
     if (!graphQLTypes.has(constructor)) {
-      graphQLTypes.set(constructor, { abstract: constructor });
+      graphQLTypes.set(constructor, { abstract: constructor, name: name ?? constructor.name });
     }
     Reflect.defineMetadata(GRAPHQL_TYPE, graphQLTypes, GRAPHQL_TYPE_OBJ);
   };
@@ -17,6 +17,7 @@ export function GraphQL(): ClassDecorator {
 
 export interface GraphQLMetadata {
   abstract: Function;
+  name: string;
 }
 
 export function Query(): MethodDecorator {

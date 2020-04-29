@@ -4,7 +4,6 @@ type Query {
 }
 
 type Mutation {
-    ## TODO: 作者
     createBook(name: String!, pageCount: Int, price: Float): Book!
     updateBook(id: Int!, name: String!): Book!
 }

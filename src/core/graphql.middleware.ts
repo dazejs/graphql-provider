@@ -36,7 +36,7 @@ export default class GraphQLMiddleware extends Middleware {
 
     // 3. Execute schema for results
     const result = execute(this.analyzer.mergedSchema, document,
-      { }, { request, req: request },
+      { }, { request, req: request, app: this.app },
       graphQLParams.variables, graphQLParams.operationName,
       undefined, undefined
     );

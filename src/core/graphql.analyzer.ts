@@ -58,9 +58,7 @@ export class GraphqlAnalyzer {
 
     const graphQLTypes: Map<Function, GraphQLMetadata> = Reflect.getMetadata(GRAPHQL_TYPE, GRAPHQL_TYPE_OBJ) ?? new Map();
     graphQLTypes.forEach((metadata) => {
-      if (!this.app.has(metadata.abstract)) {
-        this.app.singleton(metadata.abstract, metadata.abstract);
-      }
+      this.app.singleton(metadata.abstract, metadata.abstract);
       const graphQLInstance = this.app.get(metadata.abstract);
       const queryTypes = Reflect.getMetadata(GRAPHQL_QUERY_TYPE, metadata.abstract) ?? new Map();
       const mutationTypes = Reflect.getMetadata(GRAPHQL_MUTATION_TYPE, metadata.abstract) ?? new Map();
@@ -70,7 +68,7 @@ export class GraphqlAnalyzer {
         .map((m) => m.toString())
         .filter((m) => m !== 'constructor' && typeof graphQLInstance[m] === 'function')
         .forEach((m) => {
-          const method = this.makeResolver(graphQLInstance[m]).bind(graphQLInstance);
+          const method = this.makeResolver(graphQLInstance[m], graphQLInstance);
           // TODO: check duplicates
           let has = false;
           if (queryTypes.has(m)) {
@@ -86,9 +84,9 @@ export class GraphqlAnalyzer {
             has = true;
           }
           if (!has) {
-            const others = typeMethods.get(metadata.abstract.name) ?? [];
+            const others = typeMethods.get(metadata.name) ?? [];
             others.push({ name: m, func: method });
-            typeMethods.set(metadata.abstract.name, others);
+            typeMethods.set(metadata.name, others);
           }
         });
     });
@@ -100,16 +98,16 @@ export class GraphqlAnalyzer {
    *
    * Here could make more features
    */
-  private makeResolver(func: Function) {
+  private makeResolver(func: Function, instance: any) {
     return (source: any, args: any, context: any, info: any) => {
-      return func && func(args, context, { source, context, info });
+      return func && func.call(instance, args, { ...context, source, info });
     };
   }
 
   private buildResolvers(): any {
     const typeObject: any = { };
     this.graphqlMethod.typeMethods.forEach((values, key) => {
-      typeObject[key] = values?.reduce((r: any, v: any) => { r[v.name] = v; return r;}, { });
+      typeObject[key] = values?.reduce((r: any, v: any) => { r[v.name] = v.func; return r;}, { });
     });
     return {
       Query: this.graphqlMethod.queries?.reduce((r: any, v: GFunction) => { r[v.name] = v.func; return r;}, { }),

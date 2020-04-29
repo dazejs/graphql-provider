@@ -1,0 +1,9 @@
+type Query {
+    findAllAuthors: [Author]!
+    findAuthorById(id: Int!): Author
+}
+
+type Mutation {
+    createAuthor(name: String!): Author!
+    updateAuthorBooks(id: Int!, bookIds: [Int]!): Author!
+}
