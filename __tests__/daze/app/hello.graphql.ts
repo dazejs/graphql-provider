@@ -1,4 +1,4 @@
-import { graphQL, query } from '../../../index';
+import { graphQL, query } from '../../../src';
 
 @graphQL()
 export default class HelloGraphql {

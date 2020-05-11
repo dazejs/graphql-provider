@@ -1,51 +1,77 @@
-[![GitHub issues](https://img.shields.io/github/issues/dazejs/daze.svg)](https://github.com/dazejs/daze/issues)
-[![npm](https://img.shields.io/npm/v/@dazejs/framework.svg)](https://www.npmjs.com/package/@dazejs/framework)
-[![npm](https://img.shields.io/npm/dm/@dazejs/framework.svg)](https://www.npmjs.com/package/@dazejs/framework)
-[![npm](https://travis-ci.com/dazejs/framework.svg?branch=master)](https://travis-ci.org/dazejs/framework)
-[![codecov](https://codecov.io/gh/dazejs/framework/branch/master/graph/badge.svg)](https://codecov.io/gh/dazejs/framework)
-[![GitHub license](https://img.shields.io/github/license/dazejs/daze.svg)](https://github.com/dazejs/daze/blob/master/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/dazejs/graphql-provider.svg)](https://github.com/dazejs/graphql-provider/issues)
+[![npm](https://img.shields.io/npm/v/@dazejs/graphql-provider.svg)](https://www.npmjs.com/package/@dazejs/graphql-provider)
+[![npm](https://img.shields.io/npm/dm/@dazejs/graphql-provider.svg)](https://www.npmjs.com/package/@dazejs/graphql-provider)
+[![GitHub license](https://img.shields.io/github/license/dazejs/graphql-provider.svg)](https://github.com/dazejs/graphql-provider/blob/master/LICENSE)
 
 <div align="center">
-  <a href="https://github.com/dazejs/daze">
-    <img width="200" heigth="200" src="https://github.com/dazejs/daze/blob/master/logo.png">
+  <a href="https://github.com/dazejs/graphql-provider">
+    <img width="600" heigth="300" src="https://github.com/dazejs/graphql-provider/blob/master/assets/logo.png">
   </a>  
-  <h1>Daze.js</h1>
-  <h4>Web framwork for Node.js</h4>
+  <h2>GraphQL</h2>
+  <h4>基于 Daze.js 的 GraphQL 扩展</h4>
 </div>
 
-English | [中文](README_zh.md)
+## 简介
 
+这是一套基于 Daze.js 的 GraphQL 的扩展。
 
-Visit [https://dazejs.org/](https://dazejs.org/) to learn more
+## 开始
 
-## Introduction
-
-`Daze.js` is an efficient, highly extensible and powerful `Node.js` server-side Web development framework.
-
-> Note: This repository contains the project necessary code of the Daze.js framework. If you want to read core code, visit the core [framework repository](https://github.com/dazejs/framework).
-
-
-## Installation
+### 安装
 
 ```bash
-$ npm install -g @dazejs/cli
+$ npm install --save @dazejs/graphql-provider
 ```
 
+### 加载GraphQL服务提供者
 
-## Getting Started
+添加 `GraphQLProvider` 到 `config/app.ts` 配置中
 
-```bash
-$ daze create example
-$ cd example
-$ npm start
+```ts
+import { GraphQLProvider } from '@dazejs/graphql-provider';
+
+export default {
+  // ...
+  providers: [
+    // ...
+    GraphQLProvider
+  ]
+  // ...
+}
 ```
 
-visit `http://localhost:8080` to preview
+## 使用
 
-## Docs & Community
+### 定义 graphql 描述文件
 
-- [Documentations](https://dazejs.org/)
+你可以在 `config` 目录中定义多个 `*.graphql` 的描述文件，比如：
 
-## License
+* config/graphql/hello.graphql
 
-Daze.js is [MIT licensed](https://github.com/dazejs/daze/blob/master/LICENSE)
+```graphql
+type Query {
+    hello(str: String): String!
+}
+```
+
+### 定义对应的处理类
+
+* hello.graphql.ts
+
+```typescript
+import { graphQL, query } from '@dazejs/graphql-provider';
+
+@graphQL()
+export default class HelloGraphql {
+
+  @query()
+  hello({ str }: any) {
+    return `Hello ${str}`;
+  }
+}
+```
+
+## 更多功能
+
+* 内置 [graphql-scalars](https://github.com/Urigo/graphql-scalars)
+* 更详细的实例参考 `__test__` 目录

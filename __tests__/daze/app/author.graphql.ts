@@ -1,5 +1,5 @@
 import { inject } from '@dazejs/framework/dist';
-import { graphQL, mutation, query } from '../../../index';
+import { graphQL, mutation, query } from '../../../src';
 import AuthorService, { Author } from './service/author.service';
 import BookService, { Book } from './service/book.service';
 

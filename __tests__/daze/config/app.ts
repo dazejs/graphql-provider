@@ -1,4 +1,4 @@
-import { GraphQLProvider } from '../../../index';
+import { GraphQLProvider } from '../../../src';
 
 export default {
   port: 8888,

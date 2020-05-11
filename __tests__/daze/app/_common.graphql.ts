@@ -1,4 +1,4 @@
-import { graphQL, scalar } from '../../../core/graphql.decorator';
+import { graphQL, scalar } from '../../../src/core/graphql.decorator';
 import { Kind } from 'graphql';
 
 @graphQL('Common')
