@@ -1,7 +1,8 @@
-import { Service, Multiton } from '@dazejs/framework/dist';
+import { singleton, service } from '@dazejs/framework/dist';
 
-@Multiton()
-export default class AuthorService extends Service {
+@singleton
+@service('authorService')
+export default class AuthorService {
 
   private authors: Map<number, Author> = new Map();
 

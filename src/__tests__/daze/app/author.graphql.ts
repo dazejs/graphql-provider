@@ -6,9 +6,9 @@ import BookService, { Book } from './service/book.service';
 @graphQL('Author')
 export default class AuthorGraphql {
 
-  @inject(AuthorService)
+  @inject()
   private authorService: AuthorService;
-  @inject(BookService)
+  @inject()
   private bookService: BookService;
 
   /**

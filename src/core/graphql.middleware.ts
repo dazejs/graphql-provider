@@ -1,11 +1,12 @@
-import { Middleware, Request, Response, TNext } from "@dazejs/framework";
 import { execute, getOperationAST, parse, Source, specifiedRules, validate } from 'graphql';
 import { GraphqlConfig } from './graphql.config';
 import { GraphqlAnalyzer } from './graphql.analyzer';
 import { order } from '@dazejs/framework/dist/decorators/order';
+import { BaseMiddleware, middleware, Next, Request, Response } from '@dazejs/framework/dist';
 
 @order(Number.MAX_SAFE_INTEGER + 1)
-export default class GraphQLMiddleware extends Middleware {
+@middleware()
+export default class GraphQLMiddleware extends BaseMiddleware {
   private readonly graphqlConfig: GraphqlConfig;
   private readonly analyzer: GraphqlAnalyzer;
 
@@ -15,7 +16,7 @@ export default class GraphQLMiddleware extends Middleware {
     this.analyzer = new GraphqlAnalyzer(this.app).analyze();
   }
 
-  async resolve(request: Request | any, next: TNext): Promise<Response> {
+  async resolve(request: Request | any, next: Next): Promise<Response> {
     if (!this.isGraphQLRequest(request)) {
       return next();
     }

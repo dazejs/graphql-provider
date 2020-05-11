@@ -5,7 +5,7 @@ import BookService, { Book } from './service/book.service';
 @graphQL('Book')
 export default class BookGraphQL {
 
-  @inject(BookService)
+  @inject()
   bookService: BookService;
 
   /**

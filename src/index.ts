@@ -1,13 +1,11 @@
-import { Provider } from '@dazejs/framework/dist';
-import { Config } from '@dazejs/framework/dist/decorators';
-import { Depend } from '@dazejs/framework/dist/decorators/provider';
+import { BaseProvider, conf, provider } from '@dazejs/framework/dist';
 import GraphQLMiddleware from './core/graphql.middleware';
 import { GraphqlConfig } from './core/graphql.config';
 
-@Depend()
-export class GraphQLProvider extends Provider {
+@provider()
+export class GraphQLProvider extends BaseProvider {
 
-  @Config('app.graphql')
+  @conf('app.graphql')
   private conf: any;
 
   launch(): void | Promise<void> {
