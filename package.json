@@ -40,7 +40,7 @@
     "graphql-scalars": "^1.1.2",
     "nodemon": "^2.0.3",
     "supertest": "^4.0.2",
-    "jest": "^25.5.0",
+    "jest": "^25.5.4",
     "ts-jest": "^25.3.1",
     "ts-node": "^8.9.1",
     "typescript": "^3.8.3",
