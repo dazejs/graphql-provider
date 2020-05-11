@@ -1,17 +1,17 @@
-import { Inject } from '@dazejs/framework/dist';
-import { GraphQL, Mutation, Query } from '../../../index';
+import { inject } from '@dazejs/framework/dist';
+import { graphQL, mutation, query } from '../../../index';
 import BookService, { Book } from './service/book.service';
 
-@GraphQL('Book')
+@graphQL('Book')
 export default class BookGraphQL {
 
-  @Inject(BookService)
+  @inject(BookService)
   bookService: BookService;
 
   /**
    * create a book
    */
-  @Mutation()
+  @mutation()
   createBook(book: Book): Book {
     return this.bookService.createBook(book);
   }
@@ -19,7 +19,7 @@ export default class BookGraphQL {
   /**
    * update a book
    */
-  @Mutation()
+  @mutation()
   updateBook({ id, name }: Book) {
     return this.bookService.updateBook(id, name);
   }
@@ -27,7 +27,7 @@ export default class BookGraphQL {
   /**
    * query all books
    */
-  @Query()
+  @query()
   findAllBooks(): Array<Book> {
     return this.bookService.findAllBooks();
   }
@@ -35,7 +35,7 @@ export default class BookGraphQL {
   /**
    * find book by id
    */
-  @Query()
+  @query()
   findBookById({ id }: Book): Book | undefined {
     return this.bookService.findBookById(id);
   }

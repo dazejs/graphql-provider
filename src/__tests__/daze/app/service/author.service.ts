@@ -33,5 +33,6 @@ export default class AuthorService extends Service {
 export interface Author {
   id: number;
   name: string;
+  birth: Date;
   bookIds: Array<number>;
 }

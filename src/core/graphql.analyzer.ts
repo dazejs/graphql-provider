@@ -1,12 +1,13 @@
 import * as glob from 'glob';
 import * as path from "path";
 import * as fs from "fs";
-import { GraphQLSchema } from 'graphql';
+import { GraphQLScalarType, GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from 'graphql-tools';
 import { mergeTypes } from 'merge-graphql-schemas';
+import { typeDefs as commonTypeDefs, resolvers as commonResolvers } from 'graphql-scalars';
 import {
   GRAPHQL_MUTATION_TYPE,
-  GRAPHQL_QUERY_TYPE, GRAPHQL_SUBSCRIPTION_TYPE,
+  GRAPHQL_QUERY_TYPE, GRAPHQL_SCALAR_TYPE, GRAPHQL_SUBSCRIPTION_TYPE,
   GRAPHQL_TYPE,
   GRAPHQL_TYPE_OBJ,
   GraphQLMetadata
@@ -32,8 +33,8 @@ export class GraphqlAnalyzer {
     // 3. merge all schemas and make executable
     const typeDefs = mergeTypes(schemasContent, { all: true });
     this.mergedSchema = makeExecutableSchema({
-      typeDefs,
-      resolvers,
+      typeDefs: [ ...commonTypeDefs, typeDefs ],
+      resolvers: { ...commonResolvers, ...resolvers },
       resolverValidationOptions: {
         allowResolversNotInSchema: true
       }
@@ -51,38 +52,68 @@ export class GraphqlAnalyzer {
   }
 
   private buildMethods(): GraphQLMethod {
-    const queries: GFunction[] = [];
-    const mutations: GFunction[] = [];
-    const subscriptions: GFunction[] = [];
+    const queries = new Map<string, GFunction>();
+    const mutations = new Map<string, GFunction>();
+    const subscriptions = new Map<string, GFunction>();
     const typeMethods = new Map<string, GFunction[]>();
+    const scalars = new Map<string, GFunction>();
 
     const graphQLTypes: Map<Function, GraphQLMetadata> = Reflect.getMetadata(GRAPHQL_TYPE, GRAPHQL_TYPE_OBJ) ?? new Map();
     graphQLTypes.forEach((metadata) => {
       this.app.singleton(metadata.abstract, metadata.abstract);
       const graphQLInstance = this.app.get(metadata.abstract);
-      const queryTypes = Reflect.getMetadata(GRAPHQL_QUERY_TYPE, metadata.abstract) ?? new Map();
-      const mutationTypes = Reflect.getMetadata(GRAPHQL_MUTATION_TYPE, metadata.abstract) ?? new Map();
-      const subscriptionTypes = Reflect.getMetadata(GRAPHQL_SUBSCRIPTION_TYPE, metadata.abstract) ?? new Map();
+      const queryTypes: Map<string, GraphQLMetadata> = Reflect.getMetadata(GRAPHQL_QUERY_TYPE, metadata.abstract) ?? new Map();
+      const mutationTypes: Map<string, GraphQLMetadata> = Reflect.getMetadata(GRAPHQL_MUTATION_TYPE, metadata.abstract) ?? new Map();
+      const subscriptionTypes: Map<string, GraphQLMetadata> = Reflect.getMetadata(GRAPHQL_SUBSCRIPTION_TYPE, metadata.abstract) ?? new Map();
+      const scalarTypes: Map<string, GraphQLMetadata> = Reflect.getMetadata(GRAPHQL_SCALAR_TYPE, metadata.abstract) ?? new Map();
 
       Reflect.ownKeys(metadata.abstract.prototype)
         .map((m) => m.toString())
         .filter((m) => m !== 'constructor' && typeof graphQLInstance[m] === 'function')
         .forEach((m) => {
           const method = this.makeResolver(graphQLInstance[m], graphQLInstance);
-          // TODO: check duplicates
           let has = false;
-          if (queryTypes.has(m)) {
-            queries.push({ name: m, func: method });
+
+          // query type
+          const queryType = queryTypes.get(m);
+          if (queryType) {
+            if (queries.has(queryType.name)) {
+              throw new Error(`Duplicate query type for ${queryType.name}`);
+            }
+            queries.set(queryType.name, { name: queryType.name, func: method });
             has = true;
           }
-          if (mutationTypes.has(m)) {
-            mutations.push({ name: m, func: method });
+
+          // mutation type
+          const mutationType = mutationTypes.get(m);
+          if (mutationType) {
+            if (mutations.has(mutationType.name)) {
+              throw new Error(`Duplicate mutation type for ${mutationType.name}`);
+            }
+            mutations.set(mutationType.name, { name: mutationType.name, func: method });
             has = true;
           }
-          if (subscriptionTypes.has(m)) {
-            subscriptions.push({ name: m, func: method });
+
+          // subscription type
+          const subscriptionType = subscriptionTypes.get(m);
+          if (subscriptionType) {
+            if (subscriptions.has(subscriptionType.name)) {
+              throw new Error(`Duplicate subscription type for ${subscriptionType.name}`);
+            }
+            subscriptions.set(subscriptionType.name, { name: subscriptionType.name, func: method });
             has = true;
           }
+
+          // scalar type
+          const scalarType = scalarTypes.get(m);
+          if (scalarType) {
+            if (scalars.has(scalarType.name)) {
+              throw new Error(`Duplicate scalar type for ${scalarType.name}`);
+            }
+            scalars.set(scalarType.name, { name: scalarType.name, func: method });
+          }
+
+          // other object type
           if (!has) {
             const others = typeMethods.get(metadata.name) ?? [];
             others.push({ name: m, func: method });
@@ -90,7 +121,13 @@ export class GraphqlAnalyzer {
           }
         });
     });
-    return { queries, mutations, subscriptions, typeMethods };
+    return {
+      queries: [ ...queries.values() ],
+      mutations: [ ...mutations.values() ],
+      subscriptions: [ ...subscriptions.values() ],
+      scalars: [ ...scalars.values() ],
+      typeMethods
+    };
   }
 
   /**
@@ -105,15 +142,37 @@ export class GraphqlAnalyzer {
   }
 
   private buildResolvers(): any {
+    // object type
     const typeObject: any = { };
     this.graphqlMethod.typeMethods.forEach((values, key) => {
       typeObject[key] = values?.reduce((r: any, v: any) => { r[v.name] = v.func; return r;}, { });
+    });
+    // scalar type and resolve
+    const scalarObject: any = { };
+    this.graphqlMethod.scalars.forEach((value) => {
+      let scalarD = value.func(null, null, null, null);
+      if (scalarD) {
+        // build in GraphQLScalarType
+        if (scalarD instanceof GraphQLScalarType) {
+          scalarObject[value.name] = scalarD;
+        }
+        // common json type
+        else if (scalarD.serialize) {
+          scalarD = new GraphQLScalarType(scalarD);
+          scalarObject[value.name] = scalarD;
+        }
+        // invalid
+        else {
+          throw new Error(`Scalar type for ${value.name} is invalid`);
+        }
+      }
     });
     return {
       Query: this.graphqlMethod.queries?.reduce((r: any, v: GFunction) => { r[v.name] = v.func; return r;}, { }),
       Mutation: this.graphqlMethod.mutations?.reduce((r: any, v: GFunction) => { r[v.name] = v.func; return r;}, { }),
       Subscription: this.graphqlMethod.subscriptions?.reduce((r: any, v: GFunction) => { r[v.name] = v.func; return r;}, { }),
-      ...typeObject
+      ...typeObject,
+      ...scalarObject,
     };
   }
 
@@ -264,6 +323,7 @@ declare type GraphQLMethod = {
   queries: GFunction[];
   mutations: GFunction[];
   subscriptions: GFunction[];
+  scalars: GFunction[];
   typeMethods: Map<string, GFunction[]>;
 }
 

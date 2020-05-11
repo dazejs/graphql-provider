@@ -17,6 +17,18 @@ describe('test author', () => {
     expect(res2.body.data.findAuthorById).toEqual(author);
   });
 
+  it('test create author with date', async () => {
+    const birth = 1577808000000;
+    const res = await request(app._server).post(`/graphql?query=mutation { createAuthor(name: "Tom", birth: ${birth}) { id, name } }`);
+    const author = await res.body.data.createAuthor;
+    expect(author).toBeTruthy();
+    const res2 = await request(app._server).post(`/graphql?query={ findAuthorById(id: ${author.id}) { id, name, birth } }`);
+    expect(res2.body.data.findAuthorById).toEqual({
+      ...author,
+      birth: birth + 1,
+    });
+  });
+
   it('test update author', async () => {
     const res = await request(app._server).post('/graphql?query=mutation { createAuthor(name: "Tom2") { id, name } }');
     const author = await res.body.data.createAuthor;

@@ -4,6 +4,6 @@ type Query {
 }
 
 type Mutation {
-    createAuthor(name: String!): Author!
+    createAuthor(name: String!, birth: Date): Author!
     updateAuthorBooks(id: Int!, bookIds: [Int]!): Author!
 }

@@ -1,9 +1,9 @@
-import { GraphQL, Query } from '../../../index';
+import { graphQL, query } from '../../../index';
 
-@GraphQL()
+@graphQL()
 export default class HelloGraphql {
 
-  @Query()
+  @query()
   hello({ str }: any, { request }: any) {
     const testHeader = request.getHeader('test-header') ?? '';
     return `Hello ${str}${testHeader}`;

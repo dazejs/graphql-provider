@@ -1,20 +1,20 @@
-import { Inject } from '@dazejs/framework/dist';
-import { GraphQL, Mutation, Query } from '../../../index';
+import { inject } from '@dazejs/framework/dist';
+import { graphQL, mutation, query } from '../../../index';
 import AuthorService, { Author } from './service/author.service';
 import BookService, { Book } from './service/book.service';
 
-@GraphQL('Author')
+@graphQL('Author')
 export default class AuthorGraphql {
 
-  @Inject(AuthorService)
+  @inject(AuthorService)
   private authorService: AuthorService;
-  @Inject(BookService)
+  @inject(BookService)
   private bookService: BookService;
 
   /**
    * create a author
    */
-  @Mutation()
+  @mutation()
   createAuthor(author: Author): Author {
     return this.authorService.createAuthor(author);
   }
@@ -22,7 +22,7 @@ export default class AuthorGraphql {
   /**
    * query all authors
    */
-  @Query()
+  @query()
   findAllAuthors(): Array<Author> {
     return this.authorService.findAllAuthors();
   }
@@ -30,15 +30,15 @@ export default class AuthorGraphql {
   /**
    * find author by id
    */
-  @Query()
+  @query()
   findAuthorById({ id }: Author): Author | undefined {
     return this.authorService.findAuthorById(id);
   }
 
   /**
-   * update a
+   * update a author with book ids
    */
-  @Mutation()
+  @mutation()
   updateAuthorBooks({id, bookIds}: Author): Author | undefined {
     return this.authorService.updateAuthor(id, bookIds);
   }

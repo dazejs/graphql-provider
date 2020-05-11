@@ -18,5 +18,5 @@ export class GraphQLProvider extends Provider {
   }
 }
 
-export { GraphQL, Query, Mutation, Subscription } from './core/graphql.decorator';
+export { GraphQL, graphQL, Query, query, Mutation, mutation, Subscription, subscription, Scalar, scalar } from './core/graphql.decorator';
 export * from './core/graphql.middleware';
