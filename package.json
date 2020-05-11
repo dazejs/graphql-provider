@@ -30,7 +30,7 @@
     "@types/mysql": "^2.15.8",
     "@types/node": "^13.13.4",
     "@types/supertest": "^2.0.8",
-    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/eslint-plugin": "^2.32.0",
     "@typescript-eslint/parser": "^2.30.0",
     "cross-env": "^7.0.2",
     "eslint": "^5.16.0",
