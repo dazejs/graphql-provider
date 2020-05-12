@@ -1,1 +1,7 @@
 scalar Date
+
+enum Gender {
+    NONE,
+    MALE,
+    FEMALE
+}

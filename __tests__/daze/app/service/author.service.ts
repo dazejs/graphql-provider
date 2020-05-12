@@ -35,5 +35,6 @@ export interface Author {
   id: number;
   name: string;
   birth: Date;
+  gender: string;
   bookIds: Array<number>;
 }

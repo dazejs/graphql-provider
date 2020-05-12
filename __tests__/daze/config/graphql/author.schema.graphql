@@ -2,6 +2,7 @@
 type Author {
     id: Int!
     name: String!
-    birth: Date
+    birth: Date,
+    gender: Gender,
     books: [Book]
 }
